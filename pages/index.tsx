@@ -1,3 +1,4 @@
+import type { NextPage } from "next"
 import { Chat } from '@/components/Chat/Chat';
 import { Navbar } from '@/components/Mobile/Navbar';
 import { Sidebar } from '@/components/Sidebar/Sidebar';
@@ -31,11 +32,16 @@ import { useEffect, useRef, useState } from 'react';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useTranslation } from 'next-i18next';
 
+import apiModels from '@/utils/static/models'
+import apiChat from '@/utils/static/chat'
+
+
 interface HomeProps {
   serverSideApiKeyIsSet: boolean;
 }
 
-const Home: React.FC<HomeProps> = ({ serverSideApiKeyIsSet }) => {
+
+const Home: NextPage<HomeProps> = ({ serverSideApiKeyIsSet }) => {
   const { t } = useTranslation('chat');
   const [folders, setFolders] = useState<ChatFolder[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -87,6 +93,7 @@ const Home: React.FC<HomeProps> = ({ serverSideApiKeyIsSet }) => {
       };
 
       const controller = new AbortController();
+      /*
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
@@ -103,7 +110,12 @@ const Home: React.FC<HomeProps> = ({ serverSideApiKeyIsSet }) => {
         return;
       }
 
-      const data = response.body;
+      if (!response.ok) {
+        setLoading(false);
+        setMessageIsStreaming(false);
+        setMessageError(true);
+        return;
+      }
 
       if (!data) {
         setLoading(false);
@@ -112,6 +124,12 @@ const Home: React.FC<HomeProps> = ({ serverSideApiKeyIsSet }) => {
 
         return;
       }
+
+      */
+
+ 
+      const data = await apiChat(chatBody)
+
 
       if (updatedConversation.messages.length === 1) {
         const { content } = message;
@@ -125,7 +143,7 @@ const Home: React.FC<HomeProps> = ({ serverSideApiKeyIsSet }) => {
       }
 
       setLoading(false);
-
+      // @ts-ignore
       const reader = data.getReader();
       const decoder = new TextDecoder();
       let done = false;
@@ -216,6 +234,8 @@ const Home: React.FC<HomeProps> = ({ serverSideApiKeyIsSet }) => {
       ],
     } as ErrorMessage;
 
+    const response = await apiModels({ key })
+    /*
     const response = await fetch('/api/models', {
       method: 'POST',
       headers: {
@@ -225,7 +245,6 @@ const Home: React.FC<HomeProps> = ({ serverSideApiKeyIsSet }) => {
         key,
       }),
     });
-
     if (!response.ok) {
       try {
         const data = await response.json();
@@ -239,6 +258,23 @@ const Home: React.FC<HomeProps> = ({ serverSideApiKeyIsSet }) => {
     }
 
     const data = await response.json();
+    */
+
+    /* catch errors */
+    /*
+    if (!response.ok) {
+      try {
+        const data = await response.json();
+        Object.assign(error, {
+          code: data.error?.code,
+          messageLines: [data.error?.message],
+        });
+      } catch (e) {}
+      setModelError(error);
+      return;
+    }
+    */
+    const data = response.data;
 
     if (!data) {
       setModelError(error);
@@ -594,7 +630,7 @@ const Home: React.FC<HomeProps> = ({ serverSideApiKeyIsSet }) => {
   );
 };
 export default Home;
-
+/*
 export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
   return {
     props: {
@@ -608,3 +644,4 @@ export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
     },
   };
 };
+*/
